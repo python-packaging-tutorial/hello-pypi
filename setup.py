@@ -1,6 +1,6 @@
 import sys
 
-from skbuild import setup
+from setuptools import setup
 
 # Require pytest-runner only when running tests
 pytest_runner = (['pytest-runner>=2.0,<3dev']
@@ -10,7 +10,7 @@ pytest_runner = (['pytest-runner>=2.0,<3dev']
 setup_requires = pytest_runner
 
 setup(
-    name="hello-pure",
+    name="hello-pypi",
     version="1.2.3",
     description="a minimal example package (pure python version)",
     author='The scikit-build team',
