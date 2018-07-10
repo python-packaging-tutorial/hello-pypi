@@ -1,0 +1,71 @@
+
+initialize-venv: &initialize-venv
+  name: Initialize Virtual Environment
+  command: |
+    python -m virtualenv ../venv || python -m venv ../venv
+    . ../venv/bin/activate
+
+ci-steps: &ci-steps
+  steps:
+    - checkout
+    - run:
+        <<: *initialize-venv
+    - run:
+        name: Install "PyPI upload" distribution dependencies
+        command: |
+          . ../venv/bin/activate
+          python -m pip install --disable-pip-version-check --upgrade pip
+          pip install -U setuptools twine wheel
+    - run:
+        name: Build "PyPI upload" distribution 
+        command: |
+          . ../venv/bin/activate
+          python setup.py sdist bdist_wheel
+
+version: 2
+jobs:
+  python37:
+    docker:
+      - image: circleci/python:3.7.0-stretch
+    <<: *ci-steps
+
+  deploy-master:
+    docker:
+      - image: circleci/python:3.7.0-stretch
+    steps:
+    - run:
+        name: Deploy master-with-ci
+        command: |
+          echo "Deploy master-with-ci"
+  deploy-release:
+    docker:
+      - image: circleci/python:3.7.0-stretch
+    steps:
+    - run:
+        name: Deploy release
+        command: |
+          echo "Deploy release"
+
+workflows:
+  version: 2
+  test-package-publish:
+    jobs:
+      - python37:
+          filters:
+            tags:
+              only: /.*/
+      - deploy-release:
+          requires:
+            - python37
+          filters:
+            tags:
+              only: /^v[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
+      - deploy-master:
+          requires:
+            - python37
+          filters:
+            branches:
+              only: master-with-ci
+
